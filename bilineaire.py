@@ -1,27 +1,65 @@
 import numpy as np
-
+import math
 
 def bilinear_resize(image, new_width, new_height):
+    # 获取原始图像的高度、宽度和通道数
     src_height, src_width, num_channels = image.shape
+    
+    # 创建一个新的图像数组，用于存储调整尺寸后的图像，初始值为0
     resized_image = np.zeros((new_height, new_width, num_channels), dtype=np.uint8)
+    
+    # 计算宽度和高度的缩放因子
+    scale_w = src_width / new_width
+    scale_h = src_height / new_height
 
+    # 遍历新图像的每个像素
     for i in range(new_height):
         for j in range(new_width):
-            x = (i + 0.5) * (src_height / new_height) - 0.5
-            y = (j + 0.5) * (src_width / new_width) - 0.5
+            # i：纵坐标y，j：横坐标x
+            # 计算当前像素在原始图像中对应的坐标
+            # 添加0.5的偏移是为了找到像素中心的坐标
+            # src_x = (j + 0.5) * scale_w - 0.5
+            # src_y = (i + 0.5) * scale_h - 0.5
+            src_x = j * scale_w
+            src_y = i * scale_h
 
-            x1 = int(np.floor(x))
-            y1 = int(np.floor(y))
-            x2 = min(x1 + 1, src_height - 1)
-            y2 = min(y1 + 1, src_width - 1)
+            # 计算源坐标的整数部分，即原始图像中像素的位置
+            # 整数部分的用处：
+            # 定位基准像素：源坐标的整数部分（src_x_int 和 src_y_int）用于确定原始图像中最接近目标像素位置的基准像素点。
+            # 这些基准像素点是参与插值计算的四个像素点中的一个（通常是左上角的那一个）。
+            # 参与邻近像素选择：通过整数部分确定的像素点及其右侧和下方的像素点
+            # （即(src_x_int, src_y_int), (src_x_int + 1, src_y_int), (src_x_int, src_y_int + 1), 和 (src_x_int + 1, src_y_int + 1)）
+            # 是进行双线性插值所需的四个邻近像素点。
+            src_x_int = math.floor(src_x)
+            src_y_int = math.floor(src_y)
 
-            a = x - x1
-            b = y - y1
+            # 计算源坐标的小数部分，用于计算权重
+            # 小数部分的用处：
+            # 计算权重：源坐标的小数部分（src_x_float 和 src_y_float）表示目标像素位置相对于最近基准像素点的精确偏移量。
+            # 这些小数部分用于计算插值权重，即确定每个邻近像素点对最终插值结果的贡献程度。
+            # 插值计算：小数部分决定了目标像素在水平和垂直方向上与四个基准像素的接近程度，
+            # 进而决定了这些基准像素在最终插值结果中的权重。例如，如果src_x_float 接近 1，
+            # 这意味着目标像素在水平方向上更接近右侧的像素；如果src_y_float 接近 0，这意味着目标像素在垂直方向上更接近上方的像素。
+            
+            #目标像素在由最近的四个源像素形成的单元格内的相对位置
+            src_x_float = src_x - src_x_int
+            src_y_float = src_y - src_y_int
 
+            # 如果计算的坐标超出了原始图像的范围，直接使用边缘的像素值
+            if src_x_int + 1 >= src_width or src_y_int + 1 >= src_height:
+                resized_image[i, j, :] = image[src_y_int, src_x_int, :]
+                continue
+
+            # 遍历每个通道，进行双线性插值
             for k in range(num_channels):
-                resized_image[i, j, k] = (image[x1, y1, k] * (1 - a) * (1 - b) +
-                                          image[x1, y2, k] * (1 - a) * b +
-                                          image[x2, y1, k] * a * (1 - b) +
-                                          image[x2, y2, k] * a * b)
+                # 计算四个邻近像素的权重，并根据权重和像素值计算新像素的值
+                # 权重是基于源坐标的小数部分和相对位置计算的
+                value = (1. - src_y_float) * (1. - src_x_float) * image[src_y_int, src_x_int, k] + \
+                        (1. - src_y_float) * src_x_float * image[src_y_int, src_x_int + 1, k] + \
+                        src_y_float * (1. - src_x_float) * image[src_y_int + 1, src_x_int, k] + \
+                        src_y_float * src_x_float * image[src_y_int + 1, src_x_int + 1, k]
+                # 将计算得到的值赋给新图像的对应像素
+                resized_image[i, j, k] = value
 
+    # 返回调整尺寸后的图像
     return resized_image
