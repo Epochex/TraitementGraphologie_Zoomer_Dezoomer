@@ -100,7 +100,7 @@ class ImageResizerApp(App):
         # L'événement on_submit transmet les paramètres du sélecteur de fichiers, de la sélection et du toucher.
         if selection:
             filepath = selection[0]
-            print(f"选中的文件: {filepath}")  # Imprime le chemin d'accès au fichier sélectionné
+            print(f"Documents sélectionnés: {filepath}")  # Imprime le chemin d'accès au fichier sélectionné
             try:
                 self.original_image = cv2.imread(filepath)
                 if self.original_image is not None:
@@ -147,7 +147,7 @@ class ImageResizerApp(App):
         widget.texture = texture
 
     def pil_to_kivy_texture(self, pil_image):
-        """ 将PIL图像转换为Kivy纹理 """
+        """ Conversion des images PIL en textures Kivy """
         pil_image = pil_image.convert('RGBA')  # Assurez-vous que l'image est en mode RGBA
         pil_image = pil_image.transpose(PILImage.FLIP_TOP_BOTTOM)  # Retourner l'image verticalement
         data = pil_image.tobytes()
