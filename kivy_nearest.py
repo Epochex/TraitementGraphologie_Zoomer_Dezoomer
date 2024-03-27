@@ -23,28 +23,28 @@ class ImageResizerApp(App):
     def build(self):
         self.title = 'Image Resizer'
 
-        # 主布局
+        # schéma directeur
         main_layout = BoxLayout(orientation='horizontal', padding=5, spacing=5)
 
-        # 左侧布局：原始图像和导入按钮
+        # Disposition à gauche : image originale et bouton d'importation
         left_layout = BoxLayout(orientation='vertical', padding=5, spacing=5)
 
-        # 原始图像
+        # image originale
         self.original_image_widget = Image(size_hint=(1, .9))
         left_layout.add_widget(self.original_image_widget)
 
-        # 添加选择文件的按钮
+        # Bouton d'ajout pour sélectionner un fichier
         open_button = Button(text='Open Image', size_hint=(1, .1), background_color=[0, 1, 0, 1])
         open_button.bind(on_press=self.open_file)
         left_layout.add_widget(open_button)
 
-        # 右侧布局：插值方法按钮、宽度和高度输入框及处理后的图像
+        # Disposition à droite : boutons de la méthode d'interpolation, cases de saisie de la largeur et de la hauteur et image traitée.
         right_layout = BoxLayout(orientation='vertical', padding=5, spacing=5)
 
-        # 第一行：插值方法按钮
+        # Première ligne : Bouton de la méthode d'interpolation
         interpolation_layout = BoxLayout(orientation='horizontal', size_hint=(1, .1))
-        # 创建并添加插值方法按钮
-        # 修改按钮的绑定
+        # Créer et ajouter des boutons de méthode d'interpolation
+        # Modifier la liaison des boutons
         nn_button = Button(text='Nearest Neighbor', background_color=[1, 0, 0, 1])
         nn_button.bind(on_press=self.apply_resize)
         bilinear_button = Button(text='Bilinear', background_color=[0, 1, 0, 1])
@@ -53,32 +53,32 @@ class ImageResizerApp(App):
         hermite_button.bind(on_press=self.apply_resize)
 
 
-        # 将按钮添加到布局中
+        # Ajout de boutons à une mise en page
         for button in [nn_button, bilinear_button, hermite_button]:
             interpolation_layout.add_widget(button)
         
-        # 第二行：宽度和高度输入框
-        size_input_layout = BoxLayout(orientation='horizontal', size_hint=(1, .05)) #.05是修改高度
-        width_label = Label(text='width(X):', size_hint=(.15, 1))  # 减小宽度
-        self.width_input = TextInput(text='200', input_filter='int', size_hint=(.25, 1))  # 减小宽度
-        height_label = Label(text='height(Y):', size_hint=(.15, 1))  # 减小宽度
-        self.height_input = TextInput(text='200', input_filter='int', size_hint=(.25, 1))  # 减小宽度
-        # 将宽度和高度输入框及其标签添加到布局中
+        # Deuxième ligne : champs de saisie de la largeur et de la hauteur
+        size_input_layout = BoxLayout(orientation='horizontal', size_hint=(1, .05)) #.05est de modifier la hauteur
+        width_label = Label(text='width(X):', size_hint=(.15, 1))  # réduire la largeur
+        self.width_input = TextInput(text='200', input_filter='int', size_hint=(.25, 1))  # réduire la largeur
+        height_label = Label(text='height(Y):', size_hint=(.15, 1))  # réduire la largeur
+        self.height_input = TextInput(text='200', input_filter='int', size_hint=(.25, 1))  # réduire la largeur
+        # Ajout de boîtes de saisie de largeur et de hauteur et de leurs étiquettes à la mise en page
         size_input_layout.add_widget(width_label)
         size_input_layout.add_widget(self.width_input)
         size_input_layout.add_widget(height_label)
         size_input_layout.add_widget(self.height_input)
 
-        # 添加处理后的图像
+        # Ajout d'images traitées
         self.resized_image_widget = Image(size_hint=(1, .8))
         right_layout.add_widget(self.resized_image_widget)
 
-        # 将两个水平布局添加到右侧布局
+        # Ajouter deux mises en page horizontales à la mise en page de droite
         right_layout.add_widget(interpolation_layout)
         right_layout.add_widget(size_input_layout)
         
 
-        # 将左侧和右侧布局添加到主布局中
+        # Ajouter des mises en page latérales gauche et droite à la mise en page principale
         main_layout.add_widget(left_layout)
         main_layout.add_widget(right_layout)
 
@@ -86,21 +86,21 @@ class ImageResizerApp(App):
     
 
     def open_file(self, instance):
-        user_path = os.path.expanduser('~')  # 获取用户的主目录
-        pictures_path = os.path.join(user_path, 'Pictures')  # 假定你想打开用户的图片目录
+        user_path = os.path.expanduser('~')  # Obtenir le répertoire personnel de l'utilisateur
+        pictures_path = os.path.join(user_path, 'Pictures')  # Supposons que vous souhaitiez ouvrir le catalogue d'images de l'utilisateur
 
         content = FileChooserListView(path=pictures_path,
                                     filters=['*.png', '*.jpg', '*.jpeg', '*.gif', '*.bmp'],
-                                    on_submit=self.select_image)  # 改用 on_submit
+                                    on_submit=self.select_image)  # Remplacer par on_submit
         self.popup = Popup(title='Select an image', content=content,
                         size_hint=(0.9, 0.9))
         self.popup.open()
 
     def select_image(self, filechooser, selection, touch):
-        # on_submit 事件会传递 filechooser, selection 和 touch 三个参数
+        # L'événement on_submit transmet les paramètres du sélecteur de fichiers, de la sélection et du toucher.
         if selection:
             filepath = selection[0]
-            print(f"选中的文件: {filepath}")  # 打印选中的文件路径
+            print(f"选中的文件: {filepath}")  # Imprime le chemin d'accès au fichier sélectionné
             try:
                 self.original_image = cv2.imread(filepath)
                 if self.original_image is not None:
@@ -122,7 +122,7 @@ class ImageResizerApp(App):
                 print("Veuillez saisir un numéro valide :( ")
                 return
 
-            # 根据按钮的文本来决定使用哪种插值方法
+            # Décider de la méthode d'interpolation à utiliser en fonction du texte du bouton
             if instance.text == 'Nearest Neighbor':
                 resized_image = nearest_neighbor_resize(self.original_image, new_width, new_height)
             elif instance.text == 'Bilinear':
@@ -137,19 +137,19 @@ class ImageResizerApp(App):
 
 
     def display_image(self, widget, image):
-        # 将OpenCV图像转换为PIL图像
+        # Conversion des images OpenCV en images PIL
         pil_image = PILImage.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         
-        # 将PIL图像转换为纹理
+        # Conversion des images PIL en textures
         texture = self.pil_to_kivy_texture(pil_image)
         
-        # 将纹理分配给Kivy图像小部件
+        # 将纹理分配给Kivy图像小部件Attribution de textures aux widgets d'images Kivy
         widget.texture = texture
 
     def pil_to_kivy_texture(self, pil_image):
         """ 将PIL图像转换为Kivy纹理 """
-        pil_image = pil_image.convert('RGBA')  # 确保图像是RGBA模式
-        pil_image = pil_image.transpose(PILImage.FLIP_TOP_BOTTOM)  # 垂直翻转图像
+        pil_image = pil_image.convert('RGBA')  # Assurez-vous que l'image est en mode RGBA
+        pil_image = pil_image.transpose(PILImage.FLIP_TOP_BOTTOM)  # Retourner l'image verticalement
         data = pil_image.tobytes()
         size = pil_image.size
         
