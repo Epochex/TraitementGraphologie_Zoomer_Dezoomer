@@ -80,7 +80,6 @@ def bilinear_resize(image, new_width, new_height, filter_size=3):
     src_height, src_width, num_channels = image_denoised.shape
     # Expansion des bords des images débruitées
     extended_image = np.pad(image_denoised, ((1, 1), (1, 1), (0, 0)), 'edge')
-    ext_height, ext_width, _ = extended_image.shape
 
     resized_image = np.zeros((new_height, new_width, num_channels), dtype=np.uint8)
     scale_w = src_width / new_width
@@ -103,6 +102,7 @@ def bilinear_resize(image, new_width, new_height, filter_size=3):
                 resized_image[i, j, k] = np.clip(value, 0, 255)  # S'assurer que les valeurs se situent dans les limites légales
 
     return resized_image
+
 
 
 
